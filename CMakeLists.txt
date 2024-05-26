@@ -22,8 +22,15 @@ mark_as_advanced(
 
 add_executable(test_hello test_hello.cpp)
 target_link_libraries(test_hello gtest gmock gtest_main)
+add_executable(test_fstream test_fstream.cpp)
+target_link_libraries(test_fstream gtest gmock gtest_main)
 
 gtest_discover_tests(test_hello
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+)
+
+gtest_discover_tests(test_fstream
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
 )
