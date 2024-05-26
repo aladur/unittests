@@ -6,6 +6,11 @@ submodule.
 
 ## Build and execute the tests on \*NIX
 
+Initialize submodule once after clone.
+```
+git submodule update --init
+```
+
 ```
 cmake -S . -B build
 cd build
