@@ -1,0 +1,58 @@
+name: unix-build-and-test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04, ubuntu-latest, ubuntu-24.04-arm, macos-latest ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        # Use bash login shell sourcing ~/.bash_profile
+        shell: bash -leo pipefail {0}
+    steps:
+
+      - name: Context MacOS
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        run: |
+          uname -a
+          cmake --version
+          g++ --version
+          sysctl hw.physicalcpu
+          sysctl hw.logicalcpu
+          echo "Runner arch:" $RUNNER_ARCH
+          echo "Runner OS:" $RUNNER_OS
+          echo "Shell:" $SHELL
+          echo "PATH:" $PATH
+
+      - name: Context Linux
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        run: |
+          uname -a
+          cmake --version
+          clang++ --version
+          echo "Number of cores: " `grep -c processor /proc/cpuinfo`
+          echo `lscpu | grep "^CPU(s):"`
+          echo `lscpu | grep "Thread(s)"`
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Configure and Generate
+        run: cmake -S . -B build
+
+      - name: Make
+        run: cd build; make -j8
+
+      - name: Test
+        run: cd build; make test
+
+
