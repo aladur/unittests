@@ -33,8 +33,8 @@ protected:
         timebuf.modtime = mktime(&file_time);
 
         const auto result = utime(path.u8string().c_str(), &timebuf);
-        EXPECT_EQ(errno, 0);
-        ASSERT_EQ(result, 0);
+        EXPECT_EQ(errno, 0) << "path=" << path.u8string();
+        EXPECT_EQ(result, 0) << "path=" << path.u8string();
         fs::remove(path);
 
     }
@@ -42,16 +42,15 @@ protected:
 
 TEST_F(test_utime, fct_utime)
 {
-    const auto *filename{u8"utimefile.txt"};
-    const auto path = fs::temp_directory_path() / filename;
+    const auto path = fs::temp_directory_path() / fs::u8path("utimefile.txt");
 
     createAndSetFileTime(path);
 }
 
 TEST_F(test_utime, fct_utime_utf8_path)
 {
-    const auto *filename{u8"utimefile\u2665.txt"};
-    const auto path = fs::temp_directory_path() / filename;
+    const auto path = fs::temp_directory_path() /
+        fs::u8path("utimefile\u2665.txt");
 
     createAndSetFileTime(path);
 }

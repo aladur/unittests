@@ -8,8 +8,7 @@ namespace fs = std::filesystem;
 
 TEST(test_stat, fct_stat)
 {
-    const auto *filename{u8"statfile.txt"};
-    const auto path = fs::temp_directory_path() / filename;
+    const auto path = fs::temp_directory_path() / fs::u8path("statfile.txt");
     struct stat sbuf{};
 
     std::ofstream ofs(path);
@@ -17,14 +16,16 @@ TEST(test_stat, fct_stat)
     ofs << "abc";
     ofs.close();
 
-    ASSERT_TRUE(stat(path.u8string().c_str(), &sbuf) == 0);
+    const auto result = stat(path.u8string().c_str(), &sbuf);
+    EXPECT_EQ(errno, 0) << "path=" << path.u8string();
+    EXPECT_EQ(result, 0) << "path=" << path.u8string();
     fs::remove(path);
 }
 
 TEST(test_stat, fct_stat_utf8_path)
 {
-    const auto *filename{u8"statfile\u2665.txt"};
-    const auto path = fs::temp_directory_path() / filename;
+    const auto path = fs::temp_directory_path() /
+        fs::u8path(u8"statfile\u2665.txt");
     struct stat sbuf{};
 
     std::ofstream ofs(path);
@@ -32,7 +33,9 @@ TEST(test_stat, fct_stat_utf8_path)
     ofs << "abc";
     ofs.close();
 
-    ASSERT_TRUE(stat(path.u8string().c_str(), &sbuf) == 0);
+    const auto result = stat(path.u8string().c_str(), &sbuf);
+    EXPECT_EQ(errno, 0) << "path=" << path.u8string();
+    EXPECT_EQ(result, 0) << "path=" << path.u8string();
     fs::remove(path);
 }
 
