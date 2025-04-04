@@ -13,29 +13,40 @@ namespace fs = std::filesystem;
 
 TEST(test_access, fct_access)
 {
-    const auto *filename{u8"accessfile.txt"};
-    const auto path = fs::temp_directory_path() / filename;
+    const auto path = fs::temp_directory_path() / fs::u8path("accessfile.txt");
 
     std::ofstream ofs(path);
     ASSERT_TRUE(ofs.is_open());
     ofs << "abc";
     ofs.close();
 
-    ASSERT_TRUE(access(path.u8string().c_str(), W_OK) == 0);
+#ifdef _WIN32
+    const auto result = _waccess(path.wstring().c_str(), W_OK);
+#else
+    const auto result = access(path.u8string().c_str(), W_OK);
+#endif
+    EXPECT_EQ(errno, 0) << "path=" << path.u8string();
+    EXPECT_EQ(result, 0) << "path=" << path.u8string();
     fs::remove(path);
 }
 
 TEST(test_access, fct_access_utf8_path)
 {
-    const auto *filename{u8"accessfile\u2665.txt"};
-    const auto path = fs::temp_directory_path() / filename;
+    const auto path = fs::temp_directory_path() /
+        fs::u8path(u8"accessfile\u2665.txt");
 
     std::ofstream ofs(path);
     ASSERT_TRUE(ofs.is_open());
     ofs << "abc";
     ofs.close();
 
-    ASSERT_TRUE(access(path.u8string().c_str(), W_OK) == 0);
+#ifdef _WIN32
+    const auto result = _waccess(path.wstring().c_str(), W_OK);
+#else
+    const auto result = access(path.u8string().c_str(), W_OK);
+#endif
+    EXPECT_EQ(errno, 0) << "path=" << path.u8string();
+    EXPECT_EQ(result, 0) << "path=" << path.u8string();
     fs::remove(path);
 }
 

@@ -17,3 +17,28 @@ cd build
 make
 make test
 ```
+
+## Build and execute the tests on Windows
+
+Execute the following steps in git bash:
+
+Initialize submodule once after clone.
+```
+git submodule update --init
+```
+
+Configure, generate and make executable.
+
+```
+./rebuild.sh
+```
+
+Execute the unittests depending on the configuration and platform.
+
+```
+buildWin32\Release\unittests.exe
+buildWin32\Debug\unittests.exe
+buildx64\Release\unittests.exe
+buildx64\Debug\unittests.exe
+```
+

@@ -1,0 +1,79 @@
+name: windows-build-and-test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [ windows-2019, windows-2022, windows-2025 ]
+      fail-fast: false
+    env:
+      LANG: en_EN.UTF-8
+      LC_TYPE: en_EN.UTF-8
+
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Context
+        shell: cmd
+        run: |
+          cmake --version
+          set
+
+      - name: Configure, Generate and make
+        shell: bash
+        run: ./rebuild.sh
+
+      - name: Create Artifacts
+        shell: cmd
+        continue-on-error: true
+        run: |
+          XCOPY /Y buildWin32\Release\unittests.exe* bin\${{ matrix.os }}\Win32\Release /VI
+          XCOPY /Y buildWin32\Debug\unittests.exe* bin\${{ matrix.os }}\Win32\Debug /VI
+          XCOPY /Y buildx64\Release\unittests.exe* bin\${{ matrix.os }}\x64\Release /VI
+          XCOPY /Y buildx64\Debug\unittests.exe*  bin\${{ matrix.os }}\x64\Debug /VI
+
+      - name: Test on cmd
+        shell: cmd
+        continue-on-error: false
+        run: |
+          chcp
+          echo ===== Win32 Release =====
+          buildWin32\Release\unittests.exe || exit /b
+          echo ===== Win32 Debug =====
+          buildWin32\Debug\unittests.exe || exit /b
+          echo ===== x64 Release =====
+          buildx64\Release\unittests.exe || exit /b
+          echo ===== x64 Debug =====
+          buildx64\Debug\unittests.exe || exit /b
+
+      - name: Test on bash
+        shell: bash
+        continue-on-error: false
+        run: |
+          echo ===== Win32 Release =====
+          buildWin32/Release/unittests.exe
+          echo ===== Win32 Debug =====
+          buildWin32/Debug/unittests.exe
+          echo ===== x64 Release =====
+          buildx64/Release/unittests.exe
+          echo ===== x64 Debug =====
+          buildx64/Debug/unittests.exe
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unittests-build-result-${{ matrix.os }}
+          path: bin
+          compression-level: 9
+          if-no-files-found: error
